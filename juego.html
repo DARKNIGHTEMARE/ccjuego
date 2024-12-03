@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú de Juegos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #gameArea {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #87CEEB;
+            border: 2px solid #000;
+            display: none; /* Ocultar área de juego inicialmente */
+        }
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #FF4500; /* Color del dinosaurio */
+            bottom: 0;
+            left: 50px;
+        }
+        .obstacle {
+            position: absolute;
+            width: 20px;
+            height: 50px;
+            background-color: #000; /* Color del obstáculo */
+            bottom: 0;
+            animation: moveObstacle 5s linear infinite;
+        }
+        @keyframes moveObstacle {
+            0% { right: -20px; }
+            100% { right: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Elige un Juego</h1>
+<button onclick="startRexGame()">Juego del Dinosaurio Rex</button>
+<button onclick="startEquationGame()">Juego de Ecuaciones Simples</button>
+<button onclick="startSubtractionGame()">Juego de Restar Números</button>
+
+<div id="gameArea">
+    <div id="player"></div>
+</div>
+
+<script>
+    function startRexGame() {
+        document.getElementById("gameArea").style.display = "block"; // Mostrar área de juego
+        document.getElementById("gameArea").innerHTML = `<h2>Juego del Dinosaurio Rex</h2><div id="player"></div>`;
+        playRexGame();
+    }
+
+    function playRexGame() {
+        const player = document.getElementById('player');
+        let isJumping = false;
+
+        // Función para saltar
+        function jump() {
+            if (isJumping) return;
+            isJumping = true;
+            let jumpHeight = 100;
+            let currentHeight = 0;
+
+            const jumpInterval = setInterval(() => {
+                if (currentHeight >= jumpHeight) {
+                    clearInterval(jumpInterval);
+                    const fallInterval = setInterval(() => {
+                        if (currentHeight <= 0) {
+                            clearInterval(fallInterval);
+                            isJumping = false;
+                        } else {
+                            currentHeight -= 5;
+                            player.style.bottom = `${currentHeight}px`;
+                        }
+                    }, 20);
+                } else {
+                    currentHeight += 5;
+                    player.style.bottom = `${currentHeight}px`;
+                }
+            }, 20);
+        }
+
+        // Controlar el movimiento
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                jump();
+            }
+        });
+
+        // Generar obstáculos
+        function createObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.left = '100%';
+            obstacle.style.height = `${Math.random() * 50 + 30}px`; // Altura aleatoria
+            document.getElementById("gameArea").appendChild(obstacle);
+            
+            const moveObstacle = setInterval(() => {
+                const obstaclePosition = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+
+                // Comprobar colisión
+                if (obstaclePosition < 50 && obstaclePosition > 0 && player.style.bottom === "50px") {
+                    alert("¡Has chocado con un obstáculo!");
+                    clearInterval(moveObstacle);
+                    obstacle.remove();
+                }
+
+                if (obstaclePosition <= -20) {
+                    clearInterval(moveObstacle);
+                    obstacle.remove();
+                } else {
+                    obstacle.style.left = `${obstaclePosition - 5}px`; // Mover el obstáculo
+                }
+            }, 20);
+        }
+
+        // Crear obstáculos cada 2 segundos
+        setInterval(createObstacle, 2000);
+    }
+
+    function startEquationGame() {
+        document.getElementById("gameArea").innerHTML = `
+            <h2>Juego de Ecuaciones Simples</h2>
+            <p>Resuelve la siguiente ecuación: <span id="equation"></span></p>
+            <input type="number" id="equationAnswer" />
+            <button onclick="checkEquation()">Enviar Respuesta</button>
+        `;
+        generateEquation();
+    }
+
+    function startSubtractionGame() {
+        document.getElementById("gameArea").innerHTML = `
+            <h2>Juego de Restar Números</h2>
+            <p>Resuelve la siguiente resta: <span id="subtraction"></span></p>
+            <input type="number" id="subtractionAnswer" />
+            <button onclick="checkSubtraction()">Enviar Respuesta</button>
+        `;
+        generateSubtraction();
+    }
+
+    function generateEquation() {
+        const num1 = Math.floor(Math.random() * 10);
+        const num2 = Math.floor(Math.random() * 10);
+        document.getElementById("equation").innerText = `${num1} + ${num2}`;
+        document.getElementById("equationAnswer").setAttribute("data-answer", num1 + num2);
+    }
+
+    function checkEquation() {
+        const userAnswer = parseInt(document.getElementById("equationAnswer").value);
+        const correctAnswer = parseInt(document.getElementById("equationAnswer").getAttribute("data-answer"));
+        if (userAnswer === correctAnswer) {
+            alert("¡Correcto!");
+        } else {
+            alert("Intenta de nuevo.");
+        }
+        generateEquation();
+    }
+
+    function generateSubtraction() {
+        const num1 = Math.floor(Math.random() * 20);
+        const num2 = Math.floor(Math.random() * 20);
+        document.getElementById("subtraction").innerText = `${num1} - ${num2}`;
+        document.getElementById("subtractionAnswer").setAttribute("data-answer", num1 - num2);
+    }
+
+    function checkSubtraction() {
+        const userAnswer = parseInt(document.getElementById("subtractionAnswer").value);
+        const correctAnswer = parseInt(document.getElementById("subtractionAnswer").getAttribute("data-answer"));
+        if (userAnswer === correctAnswer) {
+            alert("¡Correcto!");
+        } else {
+            alert("Intenta de nuevo.");
+        }
+        generateSubtraction();
+    }
+</script>
+
+</body>
+</html>
